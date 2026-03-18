@@ -47,6 +47,32 @@ Action ComportamientoIngeniero::think(Sensores sensores)
 Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores)
 {
   Action accion = IDLE;
+  // El comportamiento de seguir un camino hasta encontrar una planta de T. Residuos
+  // Poner el valor de los sensores de visión sobre los mapas
+  ActualizarMapa(sensores);
+  
+  // Actualización de variables de estado
+  if (sensores.superficie[0] == 'D') tiene_zapatillas = true;
+  
+  // Definición del comportamiento 
+  if (sensores.superficie[0] == 'U'){ // Lllegué a una 'U'
+  	return IDLE; 
+  }
+  else if (sensores.superficie[2] == 'C'){
+  	accion = WALK;
+  }
+  else if (sensores.superficie[1] == 'C'){
+  	accion = TURN_SL;
+  }
+  else if (sensores.superficie[3] == 'C'){
+  	accion = TURN_SR;
+  }
+  else {
+  	accion = TURN_SL;
+  }
+  
+  // Devolver la siguiente acción a hacer
+  last_action = accion;
   return accion;
 }
 
