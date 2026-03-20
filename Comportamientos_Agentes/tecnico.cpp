@@ -28,11 +28,71 @@ Action ComportamientoTecnico::think(Sensores sensores) {
   return accion;
 }
 
+/**
+* @brief Determina la mejor opción entre las 3 casillas que tiene delante.
+* @param i terreno que hay en la posición 1 de superficie (45 izq)
+* @param c terreno que hay en la posicion 2 de superficie (justo delante)
+* @param d terreno que hay en la posición 1 de superficie (45 dch)
+* @return 2 si es mejor WALK, 1 para TURN_SL y 3 para TURN_SR. 0 si no hay nada interesante. 
+*/
+int VeoCasillaInteresanteT (char i, char c, char d)
+{
+   if (c == 'U') return 2;
+   else if (i == 'U') return 1;
+   else if (d == 'U') return 3;
+   else if (c == 'C') return 2;
+   else if (i == 'C') return 1;
+   else if (d == 'C') return 3;
+   else return 0;
+}
+
+/**
+* @brief Determina si casilla es viable por altura.
+* @param casilla tipo de terreno
+* @param dif diferencia de altura entre casillas
+* @param zap indica si estoy en posesión de las zapatillas
+* @return 'P' si no es accesible por altura y casilla en otro caso
+*/
+char ViablePorAlturaT (char casilla, int dif)
+{
+   if (abs(dif) <= 2)
+      return casilla;
+   else 
+      return 'P';
+}
 
 // Niveles del tÃ©cnico
 Action ComportamientoTecnico::ComportamientoTecnicoNivel_0(Sensores sensores) {
   Action accion = IDLE;
-
+  // El comportamiento de seguir un camino hasta encontrar una planta de T. Residuos
+  // Poner el valor de los sensores de visiOn sobre los mapas
+  ActualizarMapa(sensores);
+  
+  // DefiniciOn del comportamiento 
+  if (sensores.superficie[0] == 'U'){ // Lllegue a una 'U'
+  	return IDLE; 
+  }
+  
+  char i = ViablePorAlturaT(sensores.superfice[1], sensores.cota[1]-sensores.cota[0]);
+  char c = ViablePorAlturaT(sensores.superfice[2], sensores.cota[2]-sensores.cota[0]);
+  char d = ViablePorAlturaT(sensores.superfice[3], sensores.cota[3]-sensores.cota[0]);
+  
+  int pos = VeoCasillaInteresanteT(i, c, d);
+  switch (pos)
+  {
+   case 2:
+      accion = WALK;
+      break;
+   case 1:
+      accion = TURN_SL;
+      break;
+   case 3:
+      accion = TURN_SR;
+      break;
+   default:
+      accion = TURN_SL;
+      break;
+  }
   return accion;
 }
 

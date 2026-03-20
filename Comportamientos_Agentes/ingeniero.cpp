@@ -43,32 +43,80 @@ Action ComportamientoIngeniero::think(Sensores sensores)
   return accion;
 }
 
+/**
+* @brief Determina la mejor opci髇 entre las 3 casillas que tiene delante.
+* @param i terreno que hay en la posici髇 1 de superficie (45 izq)
+* @param c terreno que hay en la posicion 2 de superficie (justo delante)
+* @param d terreno que hay en la posici髇 1 de superficie (45 dch)
+* @param zap indica si estoy en posesi髇 de las zapatillas
+* @return 2 si es mejor WALK, 1 para TURN_SL y 3 para TURN_SR. 0 si no hay nada interesante. 
+*/
+int VeoCasillaInteresanteI (char i, char c, char d, bool zap)
+{
+   if (c == 'U') return 2;
+   else if (i == 'U') return 1;
+   else if (d == 'U') return 3;
+   esle if (!zap) {
+      if (c == 'D') return 2;
+      else if (i == 'D') return 1;
+      else if (d == 'D') return 3;
+   }
+   if (c == 'C') return 2;
+   else if (i == 'C') return 1;
+   else if (d == 'C') return 3;
+   else return 0;
+}
+
+/**
+* @brief Determina si casilla es viable por altura.
+* @param casilla tipo de terreno
+* @param dif diferencia de altura entre casillas
+* @param zap indica si estoy en posesi髇 de las zapatillas
+* @return 'P' si no es accesible por altura y casilla en otro caso
+*/
+char ViablePorAlturaI (char casilla, int dif, bool zap)
+{
+   if (abs(dif) <= 1 || (zap && abs(dif) <= 2))
+      return casilla;
+   else 
+      return 'P';
+}
+
 // Niveles iniciales (Comportamientos reactivos simples)
 Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores)
 {
   Action accion = IDLE;
   // El comportamiento de seguir un camino hasta encontrar una planta de T. Residuos
-  // Poner el valor de los sensores de visi贸n sobre los mapas
+  // Poner el valor de los sensores de visiOn sobre los mapas
   ActualizarMapa(sensores);
   
   // Actualizaci贸n de variables de estado
   if (sensores.superficie[0] == 'D') tiene_zapatillas = true;
   
-  // Definici贸n del comportamiento 
-  if (sensores.superficie[0] == 'U'){ // Lllegu茅 a una 'U'
+  // DefiniciOn del comportamiento 
+  if (sensores.superficie[0] == 'U'){ // Lllegue a una 'U'
   	return IDLE; 
   }
-  else if (sensores.superficie[2] == 'C'){
-  	accion = WALK;
-  }
-  else if (sensores.superficie[1] == 'C'){
-  	accion = TURN_SL;
-  }
-  else if (sensores.superficie[3] == 'C'){
-  	accion = TURN_SR;
-  }
-  else {
-  	accion = TURN_SL;
+  
+  char i = ViablePorAlturaI(sensores.superfice[1], sensores.cota[1]-sensores.cota[0], tiene_zapatillas);
+  char c = ViablePorAlturaI(sensores.superfice[2], sensores.cota[2]-sensores.cota[0], tiene_zapatillas);
+  char d = ViablePorAlturaI(sensores.superfice[3], sensores.cota[3]-sensores.cota[0], tiene_zapatillas);
+  
+  int pos = VeoCasillaInteresanteI(i, c, d, tiene_zapatillas);
+  switch (pos)
+  {
+   case 2:
+      accion = WALK;
+      break;
+   case 1:
+      accion = TURN_SL;
+      break;
+   case 3:
+      accion = TURN_SR;
+      break;
+   default:
+      accion = TURN_SL;
+      break;
   }
   
   // Devolver la siguiente acci贸n a hacer
