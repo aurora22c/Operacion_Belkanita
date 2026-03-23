@@ -3,6 +3,7 @@
 #include <iostream>
 #include <queue>
 #include <set>
+#include <vector>
 
 using namespace std;
 
@@ -52,11 +53,11 @@ Action ComportamientoIngeniero::think(Sensores sensores)
 * @return 2 si es mejor WALK, 1 para TURN_SL y 3 para TURN_SR. 0 si no hay nada interesante. 
 */
 int VeoCasillaInteresanteI (char i, char c, char d, bool zap)
-{
+{  
    if (c == 'U') return 2;
    else if (i == 'U') return 1;
    else if (d == 'U') return 3;
-   esle if (!zap) {
+   else if (!zap) {
       if (c == 'D') return 2;
       else if (i == 'D') return 1;
       else if (d == 'D') return 3;
@@ -82,6 +83,17 @@ char ViablePorAlturaI (char casilla, int dif, bool zap)
       return 'P';
 }
 
+
+char ViableI (char casilla, int dif, bool zap, char agente)
+{
+	 casilla = ViablePorAlturaI(casilla, dif, zap);
+	 
+	 if (agente == 't') 
+	 		return 'P';
+	 else
+	 		return casilla;
+}
+	
 // Niveles iniciales (Comportamientos reactivos simples)
 Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores)
 {
@@ -98,9 +110,12 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores
   	return IDLE; 
   }
   
-  char i = ViablePorAlturaI(sensores.superfice[1], sensores.cota[1]-sensores.cota[0], tiene_zapatillas);
-  char c = ViablePorAlturaI(sensores.superfice[2], sensores.cota[2]-sensores.cota[0], tiene_zapatillas);
-  char d = ViablePorAlturaI(sensores.superfice[3], sensores.cota[3]-sensores.cota[0], tiene_zapatillas);
+  char i = ViableI(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
+  								 tiene_zapatillas, sensores.agentes[1]);
+  char c = ViableI(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
+  								 tiene_zapatillas, sensores.agentes[2]);
+  char d = ViableI(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
+  								 tiene_zapatillas, sensores.agentes[3]);
   
   int pos = VeoCasillaInteresanteI(i, c, d, tiene_zapatillas);
   switch (pos)

@@ -61,6 +61,16 @@ char ViablePorAlturaT (char casilla, int dif)
       return 'P';
 }
 
+char ViableT (char casilla, int dif, char agente)
+{
+	 casilla = ViablePorAlturaT(casilla, dif);
+	 
+	 if (agente == 'i') 
+	 		return 'P';
+	 else
+	 		return casilla;
+}
+
 // Niveles del técnico
 Action ComportamientoTecnico::ComportamientoTecnicoNivel_0(Sensores sensores) {
   Action accion = IDLE;
@@ -73,9 +83,16 @@ Action ComportamientoTecnico::ComportamientoTecnicoNivel_0(Sensores sensores) {
   	return IDLE; 
   }
   
-  char i = ViablePorAlturaT(sensores.superfice[1], sensores.cota[1]-sensores.cota[0]);
-  char c = ViablePorAlturaT(sensores.superfice[2], sensores.cota[2]-sensores.cota[0]);
-  char d = ViablePorAlturaT(sensores.superfice[3], sensores.cota[3]-sensores.cota[0]);
+  if (sensores.agentes[2] == 'i'){
+  	return TURN_SL;
+  }
+  
+  char i = ViableT(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
+  								 sensores.agentes[1]);
+  char c = ViableT(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
+  								 sensores.agentes[2]);
+  char d = ViableT(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
+  								 sensores.agentes[3]);
   
   int pos = VeoCasillaInteresanteT(i, c, d);
   switch (pos)
