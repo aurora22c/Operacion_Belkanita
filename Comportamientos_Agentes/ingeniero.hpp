@@ -24,6 +24,8 @@ public:
     last_action = IDLE;
     tiene_zapatillas = false;
     giro45Izq = 0;
+    
+    explorado.assign(size, vector<int> (size, 0));
   }
 
   /**
@@ -184,7 +186,8 @@ private:
   Action last_action;
   bool tiene_zapatillas;
   int giro45Izq;
-
+	
+	vector < vector <int> > explorado; 
 };
 
 #endif

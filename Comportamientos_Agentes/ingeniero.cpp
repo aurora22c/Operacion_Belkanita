@@ -120,9 +120,12 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores
   int pos = VeoCasillaInteresanteI(i, c, d, tiene_zapatillas);
   switch (pos)
   {
-   case 2:
+   case 2: {
       accion = WALK;
+      ubicacion delante = Delante({sensores.posF, sensores.posC, sensores.rumbo});
+      explorado[delante.f][delante.c]++;
       break;
+   }
    case 1:
       accion = TURN_SL;
       break;
