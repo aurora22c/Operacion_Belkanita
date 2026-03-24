@@ -157,6 +157,10 @@ protected:
    * @return Estado con la fila y columna de la casilla de enfrente.
    */
   ubicacion Delante(const ubicacion &actual) const;
+  
+  ubicacion Izquierda(const ubicacion &actual) const;
+  
+  ubicacion Derecha(const ubicacion &actual) const;
 
   /**
    * @brief Comprueba si una celda es de tipo transitable por defecto.
@@ -186,8 +190,16 @@ protected:
  * @param plan  Lista de acciones del plan.
  */
   void VisualizaPlan(const ubicacion &st, const list<Action> &plan);
+  
+	int EvaluarCasillaT_N0(char superficie, int desnivel, char agente, int visitas);
+	int EvaluarCasillaT_N1(char superficie, int desnivel, char agente, int visitas);
 
 private:
+	const int MAX_COSTO = 1000000;	
+	const int COSTO_U = -100;
+	const int COSTO_D = -50;
+	const int COSTO_C = -10;
+
   Action last_action;
   bool tiene_zapatillas;
   int giro45Izq;

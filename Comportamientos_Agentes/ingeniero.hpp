@@ -147,6 +147,11 @@ protected:
    * @return Estado con la fila y columna de la casilla de enfrente.
    */
   ubicacion Delante(const ubicacion &actual) const;
+  
+  ubicacion Izquierda(const ubicacion &actual) const;
+  
+  ubicacion Derecha(const ubicacion &actual) const;
+  
 
   bool es_camino(unsigned char c) const;
 
@@ -180,9 +185,15 @@ protected:
  */
   void VisualizaRedTuberias(const list<Paso> &plan);
 
-
+	int EvaluarCasillaI_N0(char superficie, int desnivel, char agente, int visitas);
+	int EvaluarCasillaI_N1(char superficie, int desnivel, char agente, int visitas);
 
 private:
+	const int MAX_COSTO = 1000000;	
+	const int COSTO_U = -100;
+	const int COSTO_D = -50;
+	const int COSTO_C = -10;
+	
   Action last_action;
   bool tiene_zapatillas;
   int giro45Izq;
