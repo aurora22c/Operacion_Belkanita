@@ -7,6 +7,33 @@
 
 using namespace std;
 
+list<Action> AvanzaASaltosDeCaballo() {
+	list<Action> secuencia;
+	secuencia.push_back(WALK);
+	secuencia.push_back(WALK);
+	secuencia.push_back(TURN_SR);
+	secuencia.push_back(TURN_SR);
+	secuencia.push_back(WALK);
+	return secuencia;
+}
+
+Action ComportamientoTecnico::ComportamientoTecnicoNivel_E(Sensores sensores) {
+	Action accion = IDLE;
+	if (!hayPlan){
+		// Invocar al mÈtodo de b˙squeda
+		plan = AvanzaASaltosDeCaballo();
+		hayPlan = true;
+	}
+	if (hayPlan and plan.size()>0){
+		accion = plan.front();
+		plan.pop_front();
+	}
+	if (plan.size()== 0){
+		hayPlan = false;
+	}
+	return accion;
+}
+
 // =========================================================================
 // √ÅREA DE IMPLEMENTACI√ìN DEL ESTUDIANTE
 // =========================================================================
@@ -20,7 +47,8 @@ Action ComportamientoTecnico::think(Sensores sensores) {
     case 0: accion = ComportamientoTecnicoNivel_0(sensores); break;
     case 1: accion = ComportamientoTecnicoNivel_1(sensores); break;
     case 2: accion = ComportamientoTecnicoNivel_2(sensores); break;
-    case 3: accion = ComportamientoTecnicoNivel_3(sensores); break;
+    // case 3: accion = ComportamientoTecnicoNivel_3(sensores); break;
+    case 3: accion = ComportamientoTecnicoNivel_E(sensores); break;
     case 4: accion = ComportamientoTecnicoNivel_4(sensores); break;
     case 5: accion = ComportamientoTecnicoNivel_5(sensores); break;
     case 6: accion = ComportamientoTecnicoNivel_6(sensores); break;

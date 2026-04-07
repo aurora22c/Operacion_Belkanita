@@ -48,7 +48,8 @@ public:
                        std::vector<std::vector<unsigned char>> mapaC): 
                        Comportamiento(mapaR, mapaC) {
     // Inicializar Variables de Estado
-
+		hayPlan = false;
+		tiene_zapatillas = false;
   }
 
   ComportamientoTecnico(const ComportamientoTecnico &comport): Comportamiento(comport) {}
@@ -72,6 +73,8 @@ public:
   // ÁREA DE IMPLEMENTACIÓN DEL ESTUDIANTE
   // =========================================================================
   
+  Action ComportamientoTecnicoNivel_E(Sensores sensores);  
+
 /**
  * @brief Comportamiento del técnico para el Nivel 0.
  * @param sensores Datos actuales de los sensores.
@@ -205,6 +208,10 @@ private:
   int giro45Izq;
   
   vector < vector <int> > explorado; 
+  
+  // Varibles nivel E
+  bool hayPlan;
+  list<Action> plan;
 };
 
 #endif
