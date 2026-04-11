@@ -7,32 +7,6 @@
 
 using namespace std;
 
-list<Action> AvanzaASaltosDeCaballo() {
-	list<Action> secuencia;
-	secuencia.push_back(WALK);
-	secuencia.push_back(WALK);
-	secuencia.push_back(TURN_SR);
-	secuencia.push_back(TURN_SR);
-	secuencia.push_back(WALK);
-	return secuencia;
-}
-
-Action ComportamientoTecnico::ComportamientoTecnicoNivel_E(Sensores sensores) {
-	Action accion = IDLE;
-	if (!hayPlan){
-		// Invocar al m閠odo de b鷖queda
-		plan = AvanzaASaltosDeCaballo();
-		hayPlan = true;
-	}
-	if (hayPlan and plan.size()>0){
-		accion = plan.front();
-		plan.pop_front();
-	}
-	if (plan.size()== 0){
-		hayPlan = false;
-	}
-	return accion;
-}
 
 // =========================================================================
 // 脕REA DE IMPLEMENTACI脫N DEL ESTUDIANTE
@@ -47,8 +21,7 @@ Action ComportamientoTecnico::think(Sensores sensores) {
     case 0: accion = ComportamientoTecnicoNivel_0(sensores); break;
     case 1: accion = ComportamientoTecnicoNivel_1(sensores); break;
     case 2: accion = ComportamientoTecnicoNivel_2(sensores); break;
-    // case 3: accion = ComportamientoTecnicoNivel_3(sensores); break;
-    case 3: accion = ComportamientoTecnicoNivel_E(sensores); break;
+    case 3: accion = ComportamientoTecnicoNivel_3(sensores); break;
     case 4: accion = ComportamientoTecnicoNivel_4(sensores); break;
     case 5: accion = ComportamientoTecnicoNivel_5(sensores); break;
     case 6: accion = ComportamientoTecnicoNivel_6(sensores); break;
@@ -57,92 +30,38 @@ Action ComportamientoTecnico::think(Sensores sensores) {
   return accion;
 }
 
-// CAMBIAR CABECERA
-/**
- * @brief Devuelve la posici贸n (fila, columna) de la casilla que hay delante del agente.
- * Calcula la casilla frontal seg煤n la orientaci贸n actual (8 direcciones).
- * @param actual Estado actual del agente (fila, columna, orientacion).
- * @return Estado con la fila y columna de la casilla de enfrente.
- */
-ubicacion ComportamientoTecnico::Izquierda(const ubicacion &actual) const
-{
-  ubicacion delante = actual;
-  switch (actual.brujula)
-  {
-  case 0:
-    delante.f--;
-    delante.c--;
-    break; // norte
-  case 1:
-    delante.f--;
-    break; // noreste
-  case 2:
-    delante.c++;
-    delante.f--;
-    break; // este
-  case 3:
-    delante.c++;
-    break; // sureste
-  case 4:
-    delante.f++;
-    delante.c++;
-    break; // sur
-  case 5:
-    delante.f++;
-    break; // suroeste
-  case 6:
-    delante.c--;
-    delante.f++;
-    break; // oeste
-  case 7:
-    delante.c--;
-    break; // noroeste
-  }
-  return delante;
-}
-
-//CAMBIAR CABECERA
-/**
- * @brief Devuelve la posici贸n (fila, columna) de la casilla que hay delante del agente.
- * Calcula la casilla frontal seg煤n la orientaci贸n actual (8 direcciones).
- * @param actual Estado actual del agente (fila, columna, orientacion).
- * @return Estado con la fila y columna de la casilla de enfrente.
- */
-ubicacion ComportamientoTecnico::Derecha(const ubicacion &actual) const
-{
-  ubicacion delante = actual;
-  switch (actual.brujula)
-  {
-  case 0:
-    delante.f--;
-    delante.c++;
-    break; // norte
-  case 1:
-    delante.c++;
-    break; // noreste
-  case 2:
-    delante.c++;
-    delante.f++;
-    break; // este
-  case 3:
-    delante.f++;
-    break; // sureste
-  case 4:
-    delante.f++;
-    delante.c--;
-    break; // sur
-  case 5:
-    delante.c--;
-    break; // suroeste
-  case 6:
-    delante.c--;
-    delante.f--; 
-    break; // oeste
-  case 7:
-    delante.f--;
-    break; // noroeste
-  }
-  return delante;
+ComportamientoTecnico::EstadoT ComportamientoTecnico::NextCasillaTecnico(const EstadoT &st){
+	EstadoT siguiente = st;
+	switch (st.site.brujula) {
+		case norte:
+			siguiente.site.f = st.site.f - 1;
+			break;
+		case noreste:
+			siguiente.site.f = st.site.f - 1;
+			siguiente.site.c = st.site.c + 1;
+			break;
+		case este:
+			siguiente.site.c = st.site.c + 1;
+			break;
+		case sureste:
+			siguiente.site.f = st.site.f + 1;
+			siguiente.site.c = st.site.c + 1;
+			break;
+		case sur:
+			siguiente.site.f = st.site.f + 1;
+			break;
+		case suroeste:
+			siguiente.site.f = st.site.f + 1;
+			siguiente.site.c = st.site.c - 1;
+			break;
+		case oeste:
+			siguiente.site.c = st.site.c - 1;
+			break;
+		case noroeste:
+			siguiente.site.f = st.site.f - 1;
+			siguiente.site.c = st.site.c - 1;
+	}
+	return siguiente;
 }
 
 /**
@@ -194,7 +113,7 @@ int ComportamientoTecnico::EvaluarCasillaT_N0(char casilla, int dif, char agente
 		
 	int costo = MAX_COSTO;
 	
-	if (casilla == 'C') costo = visitas;
+	if (casilla == 'C' || casilla == 'D') costo = visitas;
 	else if (casilla == 'U') costo = visitas + COSTO_U;
 	
 	return costo;
@@ -214,23 +133,32 @@ Action ComportamientoTecnico::ComportamientoTecnicoNivel_0(Sensores sensores) {
   
   explorado[sensores.posF][sensores.posC]++;
   
-  ubicacion izda = Izquierda({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion dcha = Derecha({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion ctro = Delante({sensores.posF, sensores.posC, sensores.rumbo});
+  EstadoT izda = NextCasillaTecnico({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+7)%8)}, tiene_zapatillas});
+  EstadoT dcha = NextCasillaTecnico({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+1)%8)}, tiene_zapatillas});
+  EstadoT ctro = NextCasillaTecnico({{sensores.posF, sensores.posC, sensores.rumbo}, tiene_zapatillas});
   
   int costo_i = EvaluarCasillaT_N0(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
-  								 								sensores.agentes[1], explorado[izda.f][izda.c]);
+  								 								sensores.agentes[1], explorado[izda.site.f][izda.site.c]);
   
   int costo_c = EvaluarCasillaT_N0(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
-  								 								sensores.agentes[2], explorado[ctro.f][ctro.c]);
+  								 								sensores.agentes[2], explorado[ctro.site.f][ctro.site.c]);
   								 								
   int costo_d = EvaluarCasillaT_N0(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
-  								 								sensores.agentes[3], explorado[dcha.f][dcha.c]);
+  								 								sensores.agentes[3], explorado[dcha.site.f][dcha.site.c]);
   
 	int costo_min = min({costo_c, costo_i, costo_d});
   
   if (costo_min == MAX_COSTO) {
-      accion = TURN_SL;
+      if (giro45Izq > 1)
+      	giro45Izq = -2;
+      else if (giro45Izq < 0)
+      	accion = TURN_SR;
+      else 
+      	accion = TURN_SL;
+      	
+      giro45Izq++;
   } 
   else if (costo_min == costo_c) {
       accion = WALK;
@@ -293,23 +221,32 @@ Action ComportamientoTecnico::ComportamientoTecnicoNivel_1(Sensores sensores) {
   
   explorado[sensores.posF][sensores.posC]++;
   
-  ubicacion izda = Izquierda({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion dcha = Derecha({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion ctro = Delante({sensores.posF, sensores.posC, sensores.rumbo});
+  EstadoT izda = NextCasillaTecnico({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+7)%8)}, tiene_zapatillas});
+  EstadoT dcha = NextCasillaTecnico({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+1)%8)}, tiene_zapatillas});
+  EstadoT ctro = NextCasillaTecnico({{sensores.posF, sensores.posC, sensores.rumbo}, tiene_zapatillas});
   
   int costo_i = EvaluarCasillaT_N1(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
-  								 								sensores.agentes[1], explorado[izda.f][izda.c]);
+  								 								sensores.agentes[1], explorado[izda.site.f][izda.site.c]);
   
   int costo_c = EvaluarCasillaT_N1(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
-  								 								sensores.agentes[2], explorado[ctro.f][ctro.c]);
+  								 								sensores.agentes[2], explorado[ctro.site.f][ctro.site.c]);
   								 								
   int costo_d = EvaluarCasillaT_N1(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
-  								 								sensores.agentes[3], explorado[dcha.f][dcha.c]);
+  								 								sensores.agentes[3], explorado[dcha.site.f][dcha.site.c]);
   
 	int costo_min = min({costo_c, costo_i, costo_d});
   
   if (costo_min == MAX_COSTO) {
-      accion = TURN_SL;
+      if (giro45Izq > 1)
+      	giro45Izq = -2;
+      else if (giro45Izq < 0)
+      	accion = TURN_SR;
+      else 
+      	accion = TURN_SL;
+      	
+      giro45Izq++;
   } 
   else if (costo_min == costo_c) {
       accion = WALK;
@@ -332,7 +269,146 @@ Action ComportamientoTecnico::ComportamientoTecnicoNivel_1(Sensores sensores) {
  * @return Acci贸n a realizar.
  */
 Action ComportamientoTecnico::ComportamientoTecnicoNivel_2(Sensores sensores) {
+  /*
+  Action accion = IDLE;
+  
+  ActualizarMapa(sensores);
+  
+  if (sensores.agentes[2] == 'i') {
+  	
+  }
+  */
   return IDLE;
+}
+
+int ComportamientoTecnico::GastoEneria(Action accion, char inicio, int dif) {
+	int gasto = 0,
+			altura = 0;
+	switch (accion) {
+		case WALK: 
+			switch (inicio) {
+				case 'A':
+					gasto = 60;
+					break;
+				case 'H':
+					gasto = 6;
+					break;
+				case 'S': 
+					gasto = 3;
+					break;
+				default:
+					gasto = 1;
+			}
+			
+			if ( (inicio == 'A' || inicio == 'H' || inicio == 'S') && dif < 0) altura = -1;
+			else if ( (inicio == 'A' || inicio == 'H' || inicio == 'S') && dif > 0) altura = 1;
+			break;
+		/*	
+		case JUMP: 
+			switch (inicio) {
+				case 'A':
+					gasto = 90;
+					break;
+				case 'H':
+					gasto = 10;
+					break;
+				case 'S': 
+					gasto = 4;
+					break;
+				default:
+					gasto = 3;
+			}
+			
+			if (dif < 0) altura = -1;
+			else if (dif > 0) altura = 1;
+			break;
+		*/
+		case INSTALL: 
+			switch (inicio) {
+				case 'A':
+					gasto = 60;
+					break;
+				case 'H':
+					gasto = 45;
+					break;
+				case 'S': 
+					gasto = 25;
+					break;
+				case 'C':
+					gasto = 15;
+					break;
+				case 'U':
+					gasto = 15;
+					break;
+				default:
+					gasto = 30;
+			}
+			break;
+			
+		case RAISE: 
+			switch (inicio) {
+				case 'H':
+					gasto = 55;
+					break;
+				case 'S': 
+					gasto = 30;
+					break;
+				case 'C':
+					gasto = 10;
+					break;
+				case 'U':
+					gasto = 10;
+					break;
+				default:
+					gasto = 40;
+			}
+			break;
+			
+		case DIG: 
+			switch (inicio) {
+				case 'H':
+					gasto = 65;
+					break;
+				case 'S': 
+					gasto = 40;
+					break;
+				case 'C':
+					gasto = 25;
+					break;
+				case 'U':
+					gasto = 25;
+					break;
+				default:
+					gasto = 50;
+			}
+			break;
+		
+		default: 
+			switch (inicio) {
+				case 'A':
+					gasto = 90;
+					break;
+				case 'H': 
+					gasto = 10;
+					break;
+				case 'S':
+					gasto = 4;
+					break;
+				default:
+					gasto = 5;
+			}
+			
+			if (dif < 0) altura = -1;
+			else if (dif > 0) altura = 1;
+			break;
+	}
+	
+	if (altura == 1)
+		gasto += 5;
+	else if (altura == -1)
+		gasto -= 2;
+		
+	return gasto;
 }
 
 /**
@@ -341,7 +417,28 @@ Action ComportamientoTecnico::ComportamientoTecnicoNivel_2(Sensores sensores) {
  * @return Acci贸n a realizar.
  */
 Action ComportamientoTecnico::ComportamientoTecnicoNivel_3(Sensores sensores) {
-  return IDLE;
+  Action accion = IDLE;
+	if (!hayPlan){
+		// Invocar al m閠odo de b鷖queda
+		EstadoT inicio, fin;
+		inicio.site.f = sensores.posF;
+		inicio.site.c = sensores.posC;
+		inicio.site.brujula = sensores.rumbo;
+		inicio.zapatillas = tiene_zapatillas;
+		fin.site.f = sensores.BelPosF;
+		fin.site.c = sensores.BelPosC;
+		//plan = B_Anchura(inicio, fin, mapaResultado, mapaCotas); // <----
+		VisualizaPlan(inicio.site,plan);
+		hayPlan = plan.size() != 0 ;
+	}
+	if (hayPlan and plan.size()>0){
+		accion = plan.front();
+		plan.pop_front();
+	}
+	if (plan.size()== 0){
+		hayPlan = false;
+	}
+	return accion;
 }
 
 /**

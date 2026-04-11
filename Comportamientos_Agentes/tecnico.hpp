@@ -160,10 +160,6 @@ protected:
    * @return Estado con la fila y columna de la casilla de enfrente.
    */
   ubicacion Delante(const ubicacion &actual) const;
-  
-  ubicacion Izquierda(const ubicacion &actual) const;
-  
-  ubicacion Derecha(const ubicacion &actual) const;
 
   /**
    * @brief Comprueba si una celda es de tipo transitable por defecto.
@@ -196,7 +192,55 @@ protected:
   
 	int EvaluarCasillaT_N0(char superficie, int desnivel, char agente, int visitas);
 	int EvaluarCasillaT_N1(char superficie, int desnivel, char agente, int visitas);
+	
+	struct EstadoT {
+		ubicacion site;
+		bool zapatillas;
+		
+		bool operator == (const EstadoT &st) const {
+			return site == st.site && zapatillas == st.zapatillas;
+		}
+	};
 
+	struct NodoT {
+		EstadoT estado;
+		list<Action> secuencia;
+		
+		bool operator == (const NodoT &node) const {
+			return estado == node.estado;
+		}
+		
+		bool operator<(const NodoT &node) const{
+			if (estado.site.f < node.estado.site.f) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c < node.estado.site.c) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c == node.estado.site.c and 
+							 estado.site.brujula < node.estado.site.brujula) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c == node.estado.site.c and 
+							 estado.site.brujula == node.estado.site.brujula and 
+							 estado.zapatillas < node.estado.zapatillas) return true;
+			else return false;
+		}
+	};
+	/*
+	list<Action> B_Anchura(const EstadoT &inicio, const EstadoT &fin,
+												 const vector<vector<unsigned char>> &terreno,
+												 const vector<vector<unsigned char>> &altura);
+													
+	bool CasillaAccesibleTecnico(const EstadoT &st, const vector<vector<unsigned char>> &terreno, const
+															 vector<vector<unsigned char>> &altura);
+	
+	*/
+	EstadoT NextCasillaTecnico(const EstadoT &st);
+	
+	/*
+	EstadoT applyT(Action accion, const EstadoT & st, const vector<vector<unsigned char>> &terreno, const
+							 	 vector<vector<unsigned char>> &altura);
+	*/
+	int GastoEneria(Action accion, char inicio, int dif);
+	
 private:
 	const int MAX_COSTO = 1000000;	
 	const int COSTO_U = -100;

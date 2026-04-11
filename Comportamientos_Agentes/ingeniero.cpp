@@ -45,92 +45,39 @@ Action ComportamientoIngeniero::think(Sensores sensores)
   return accion;
 }
 
-// CAMBIAR CABECERA
-/**
- * @brief Devuelve la posici贸n (fila, columna) de la casilla que hay delante del agente.
- * Calcula la casilla frontal seg煤n la orientaci贸n actual (8 direcciones).
- * @param actual Estado actual del agente (fila, columna, orientacion).
- * @return Estado con la fila y columna de la casilla de enfrente.
- */
-ubicacion ComportamientoIngeniero::Izquierda(const ubicacion &actual) const
-{
-  ubicacion delante = actual;
-  switch (actual.brujula)
-  {
-  case 0:
-    delante.f--;
-    delante.c--;
-    break; // norte
-  case 1:
-    delante.f--;
-    break; // noreste
-  case 2:
-    delante.c++;
-    delante.f--;
-    break; // este
-  case 3:
-    delante.c++;
-    break; // sureste
-  case 4:
-    delante.f++;
-    delante.c++;
-    break; // sur
-  case 5:
-    delante.f++;
-    break; // suroeste
-  case 6:
-    delante.c--;
-    delante.f++;
-    break; // oeste
-  case 7:
-    delante.c--;
-    break; // noroeste
-  }
-  return delante;
-}
-
-//CAMBIAR CABECERA
-/**
- * @brief Devuelve la posici贸n (fila, columna) de la casilla que hay delante del agente.
- * Calcula la casilla frontal seg煤n la orientaci贸n actual (8 direcciones).
- * @param actual Estado actual del agente (fila, columna, orientacion).
- * @return Estado con la fila y columna de la casilla de enfrente.
- */
-ubicacion ComportamientoIngeniero::Derecha(const ubicacion &actual) const
-{
-  ubicacion delante = actual;
-  switch (actual.brujula)
-  {
-  case 0:
-    delante.f--;
-    delante.c++;
-    break; // norte
-  case 1:
-    delante.c++;
-    break; // noreste
-  case 2:
-    delante.c++;
-    delante.f++;
-    break; // este
-  case 3:
-    delante.f++;
-    break; // sureste
-  case 4:
-    delante.f++;
-    delante.c--;
-    break; // sur
-  case 5:
-    delante.c--;
-    break; // suroeste
-  case 6:
-    delante.c--;
-    delante.f--; 
-    break; // oeste
-  case 7:
-    delante.f--;
-    break; // noroeste
-  }
-  return delante;
+ComportamientoIngeniero::EstadoI ComportamientoIngeniero::NextCasillaIngeniero(const EstadoI &st){
+	EstadoI siguiente = st;
+	switch (st.site.brujula)
+	{
+	case norte:
+			siguiente.site.f = st.site.f - 1;
+			break;
+	case noreste:
+			siguiente.site.f = st.site.f - 1;
+			siguiente.site.c = st.site.c + 1;
+			break;
+	case este:
+			siguiente.site.c = st.site.c + 1;
+			break;
+	case sureste:
+			siguiente.site.f = st.site.f + 1;
+			siguiente.site.c = st.site.c + 1;
+			break;
+	case sur:
+			siguiente.site.f = st.site.f + 1;
+			break;
+	case suroeste:
+			siguiente.site.f = st.site.f + 1;
+			siguiente.site.c = st.site.c - 1;
+			break;
+	case oeste:
+			siguiente.site.c = st.site.c - 1;
+			break;
+	case noroeste:
+			siguiente.site.f = st.site.f - 1;
+			siguiente.site.c = st.site.c - 1;
+	}
+	return siguiente;
 }
 
 /**
@@ -190,7 +137,7 @@ int ComportamientoIngeniero::EvaluarCasillaI_N0(char casilla, int dif, char agen
 		
 	int costo = MAX_COSTO;
 	
-	if (casilla == 'C') costo = visitas;
+	if (casilla == 'C' || casilla == 'D') costo = visitas;
 	else if (casilla == 'U') costo = visitas + COSTO_U;
 	else if (casilla == 'D' && !tiene_zapatillas) costo = visitas + COSTO_D;
 	
@@ -215,32 +162,44 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_0(Sensores sensores
   
   explorado[sensores.posF][sensores.posC]++;
   
-  ubicacion izda = Izquierda({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion dcha = Derecha({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion ctro = Delante({sensores.posF, sensores.posC, sensores.rumbo});
+  EstadoI izda = NextCasillaIngeniero({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+7)%8)}, tiene_zapatillas});
+  EstadoI dcha = NextCasillaIngeniero({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+1)%8)}, tiene_zapatillas});
+  EstadoI ctro = NextCasillaIngeniero({{sensores.posF, sensores.posC, sensores.rumbo}, tiene_zapatillas});
   
   int costo_i = EvaluarCasillaI_N0(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
-  								 								sensores.agentes[1], explorado[izda.f][izda.c]);
+  								 								sensores.agentes[1], explorado[izda.site.f][izda.site.c]);
   
   int costo_c = EvaluarCasillaI_N0(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
-  								 								sensores.agentes[2], explorado[ctro.f][ctro.c]);
+  								 								sensores.agentes[2], explorado[ctro.site.f][ctro.site.c]);
   								 								
   int costo_d = EvaluarCasillaI_N0(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
-  								 								sensores.agentes[3], explorado[dcha.f][dcha.c]);
+  								 								sensores.agentes[3], explorado[dcha.site.f][dcha.site.c]);
   
 	int costo_min = min({costo_c, costo_i, costo_d});
   
   if (costo_min == MAX_COSTO) {
-      accion = TURN_SL;
+      if (giro45Izq > 4)
+      	giro45Izq = -5;
+      else if (giro45Izq < 0)
+      	accion = TURN_SR;
+      else 
+      	accion = TURN_SL;
+      	
+      giro45Izq++;
   } 
   else if (costo_min == costo_c) {
       accion = WALK;
+      giro45Izq = 0;
   } 
   else if (costo_min == costo_i) {
       accion = TURN_SL;
+      giro45Izq = 0;
   } 
   else {
       accion = TURN_SR;
+      giro45Izq = 0;
   }
   
   // Devolver la siguiente acci贸n a hacer
@@ -293,23 +252,32 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_1(Sensores sensores
   
   explorado[sensores.posF][sensores.posC]++;
   
-  ubicacion izda = Izquierda({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion dcha = Derecha({sensores.posF, sensores.posC, sensores.rumbo});
-  ubicacion ctro = Delante({sensores.posF, sensores.posC, sensores.rumbo});
+  EstadoI izda = NextCasillaIngeniero({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+7)%8)}, tiene_zapatillas});
+  EstadoI dcha = NextCasillaIngeniero({{sensores.posF, sensores.posC, 
+  																		(Orientacion)((sensores.rumbo+1)%8)}, tiene_zapatillas});
+  EstadoI ctro = NextCasillaIngeniero({{sensores.posF, sensores.posC, sensores.rumbo}, tiene_zapatillas});
   
   int costo_i = EvaluarCasillaI_N1(sensores.superficie[1], sensores.cota[1]-sensores.cota[0], 
-  								 								sensores.agentes[1], explorado[izda.f][izda.c]);
+  								 								sensores.agentes[1], explorado[izda.site.f][izda.site.c]);
   
   int costo_c = EvaluarCasillaI_N1(sensores.superficie[2], sensores.cota[2]-sensores.cota[0], 
-  								 								sensores.agentes[2], explorado[ctro.f][ctro.c]);
+  								 								sensores.agentes[2], explorado[ctro.site.f][ctro.site.c]);
   								 								
   int costo_d = EvaluarCasillaI_N1(sensores.superficie[3], sensores.cota[3]-sensores.cota[0], 
-  								 								sensores.agentes[3], explorado[dcha.f][dcha.c]);
+  								 								sensores.agentes[3], explorado[dcha.site.f][dcha.site.c]);
   
 	int costo_min = min({costo_c, costo_i, costo_d});
   
   if (costo_min == MAX_COSTO) {
-      accion = TURN_SL;
+      if (giro45Izq > 1)
+      	giro45Izq = -2;
+      else if (giro45Izq < 0)
+      	accion = TURN_SR;
+      else 
+      	accion = TURN_SL;
+      	
+      giro45Izq++;
   } 
   else if (costo_min == costo_c) {
       accion = WALK;
@@ -326,6 +294,105 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_1(Sensores sensores
   return accion;
 }
 
+
+
+
+bool ComportamientoIngeniero::CasillaAccesibleIngeniero(const EstadoI &st, const vector<vector<unsigned char>> &terreno, 
+																												const vector<vector<unsigned char>> &altura){
+	EstadoI next = NextCasillaIngeniero(st);
+	bool check1 = false, check2 = false, check3 = false;
+	check1 = terreno[next.site.f][next.site.c] != 'P' && terreno[next.site.f][next.site.c] != 'M';
+	check2 = terreno[next.site.f][next.site.c] != 'B';
+	check3 = abs(altura[next.site.f][next.site.c] - altura[st.site.f][st.site.c]) <= 1 ||
+					 abs(altura[next.site.f][next.site.c] - altura[st.site.f][st.site.c]) <= 2 && st.zapatillas;
+	return check1 and check2 and check3;
+}
+
+
+ComportamientoIngeniero::EstadoI ComportamientoIngeniero::applyI(Action accion, const EstadoI & st, 
+					const vector<vector<unsigned char>> &terreno, const vector<vector<unsigned char>> &altura){
+	EstadoI next = st;
+	switch(accion){
+	case WALK:
+			if (CasillaAccesibleIngeniero(st,terreno,altura)){
+				next = NextCasillaIngeniero(st);
+			}
+			break;
+	case TURN_SR:
+			next.site.brujula = (Orientacion) ((next.site.brujula+1)%8);
+			break;
+	case TURN_SL:
+			next.site.brujula = (Orientacion) ((next.site.brujula+7)%8);
+			break;
+	}
+	return next;
+}
+
+list<Action> ComportamientoIngeniero::B_Anchura(const EstadoI &inicio, const EstadoI &fin,
+																								const vector<vector<unsigned char>> &terreno,
+																								const vector<vector<unsigned char>> &altura) {
+	NodoI current_node;
+	list<NodoI> frontier;
+	set<NodoI> explored;
+	list<Action> path;
+	
+	current_node.estado = inicio;
+	frontier.push_back(current_node);
+	bool SolutionFound = (current_node.estado.site.f == fin.site.f && current_node.estado.site.c == fin.site.c);
+	
+	while (!SolutionFound && !frontier.empty()) {
+		frontier.pop_front();
+		explored.insert(current_node);
+		
+		if (terreno[current_node.estado.site.f][current_node.estado.site.c] == 'D') {
+			current_node.estado.zapatillas = true;
+		}
+		
+		NodoI child_Walk = current_node;
+		child_Walk.estado = applyI(WALK, current_node.estado, terreno, altura);
+		if (child_Walk.estado.site.f == fin.site.f && child_Walk.estado.site.c == fin.site.c) {
+			child_Walk.secuencia.push_back(WALK);
+			current_node = child_Walk;
+			SolutionFound = true;
+		}
+		else if (explored.find(child_Walk) == explored.end()) {
+			child_Walk.secuencia.push_back(WALK);
+			frontier.push_back(child_Walk);
+		}
+		
+		if (!SolutionFound) {
+			NodoI child_TurnSR = current_node;
+			child_TurnSR.estado = applyI(TURN_SR, current_node.estado, terreno, altura);
+			if (explored.find(child_TurnSR) == explored.end()) {
+				child_TurnSR.secuencia.push_back(TURN_SR);
+				frontier.push_back(child_TurnSR);
+			}
+			
+			NodoI child_TurnSL = current_node;
+			child_TurnSL.estado = applyI(TURN_SL, current_node.estado, terreno, altura);
+			if (explored.find(child_TurnSL) == explored.end()) {
+				child_TurnSL.secuencia.push_back(TURN_SL);
+				frontier.push_back(child_TurnSL);
+			}
+			
+		}
+		
+		if (!SolutionFound && !frontier.empty()) {
+			current_node = frontier.front();
+			while (explored.find(current_node) != explored.end() && !frontier.empty()) {
+				frontier.pop_front();
+				current_node = frontier.front();
+			}
+		}
+	}
+	
+	if (SolutionFound) {
+		path = current_node.secuencia;
+	}
+	
+	return path;
+}
+
 // Niveles avanzados (Uso de b煤squeda)
 /**
  * @brief Comportamiento del ingeniero para el Nivel 2 (b煤squeda).
@@ -334,8 +401,28 @@ Action ComportamientoIngeniero::ComportamientoIngenieroNivel_1(Sensores sensores
  */
 Action ComportamientoIngeniero::ComportamientoIngenieroNivel_2(Sensores sensores)
 {
-  // TODO: Implementar b煤squeda para el Nivel 2.
-  return IDLE;
+  Action accion = IDLE;
+	if (!hayPlan){
+		// Invocar al m閠odo de b鷖queda
+		EstadoI inicio, fin;
+		inicio.site.f = sensores.posF;
+		inicio.site.c = sensores.posC;
+		inicio.site.brujula = sensores.rumbo;
+		inicio.zapatillas = tiene_zapatillas;
+		fin.site.f = sensores.BelPosF;
+		fin.site.c = sensores.BelPosC;
+		plan = B_Anchura(inicio, fin, mapaResultado, mapaCotas);
+		VisualizaPlan(inicio.site,plan);
+		hayPlan = plan.size() != 0 ;
+	}
+	if (hayPlan and plan.size()>0){
+		accion = plan.front();
+		plan.pop_front();
+	}
+	if (plan.size()== 0){
+		hayPlan = false;
+	}
+	return accion;
 }
 
 /**

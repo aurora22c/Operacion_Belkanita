@@ -37,6 +37,8 @@ public:
                          std::vector<std::vector<unsigned char>> mapaC): 
                          Comportamiento(mapaR, mapaC) {
     // Inicializar Variables de Estado
+		hayPlan = false;
+		tiene_zapatillas = false;
   }
 
   ComportamientoIngeniero(const ComportamientoIngeniero &comport)
@@ -146,12 +148,7 @@ protected:
    * @param actual Estado actual del agente (fila, columna, orientacion).
    * @return Estado con la fila y columna de la casilla de enfrente.
    */
-  ubicacion Delante(const ubicacion &actual) const;
-  
-  ubicacion Izquierda(const ubicacion &actual) const;
-  
-  ubicacion Derecha(const ubicacion &actual) const;
-  
+  ubicacion Delante(const ubicacion &actual) const; 
 
   bool es_camino(unsigned char c) const;
 
@@ -187,6 +184,50 @@ protected:
 
 	int EvaluarCasillaI_N0(char superficie, int desnivel, char agente, int visitas);
 	int EvaluarCasillaI_N1(char superficie, int desnivel, char agente, int visitas);
+	
+	struct EstadoI {
+		ubicacion site;
+		bool zapatillas;
+		
+		bool operator == (const EstadoI &st) const {
+			return site == st.site && zapatillas == st.zapatillas;
+		}
+	};
+	
+	struct NodoI {
+		EstadoI estado;
+		list<Action> secuencia;
+		
+		bool operator == (const NodoI &node) const {
+			return estado == node.estado;
+		}
+		
+		bool operator<(const NodoI &node) const{
+			if (estado.site.f < node.estado.site.f) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c < node.estado.site.c) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c == node.estado.site.c and 
+							 estado.site.brujula < node.estado.site.brujula) return true;
+			else if (estado.site.f == node.estado.site.f and 
+							 estado.site.c == node.estado.site.c and 
+							 estado.site.brujula == node.estado.site.brujula and 
+							 estado.zapatillas < node.estado.zapatillas) return true;
+			else return false;
+		}
+	};
+	
+	list<Action> B_Anchura(const EstadoI &inicio, const EstadoI &fin,
+												 const vector<vector<unsigned char>> &terreno,
+												 const vector<vector<unsigned char>> &altura);
+													
+	bool CasillaAccesibleIngeniero(const EstadoI &st, const vector<vector<unsigned char>> &terreno, const
+															   vector<vector<unsigned char>> &altura);
+	
+	EstadoI NextCasillaIngeniero(const EstadoI &st);
+	
+	EstadoI applyI(Action accion, const EstadoI & st, const vector<vector<unsigned char>> &terreno, const
+							 	 vector<vector<unsigned char>> &altura);
 
 private:
 	const int MAX_COSTO = 1000000;	
@@ -199,6 +240,9 @@ private:
   int giro45Izq;
 	
 	vector < vector <int> > explorado; 
+	
+  bool hayPlan;
+  list<Action> plan;
 };
 
 #endif
